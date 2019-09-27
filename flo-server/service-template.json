@@ -1,0 +1,28 @@
+{
+  "name": "flo-server",
+  "pod": "flo-server",
+  "version": "0.0.3",
+  "spec": [
+    {
+      "type": "container",
+      "name": "", 
+      "image": "hashedin/conductor-server:0.0.1",
+      "appPort": 8080,
+      "appProtocol": "http",
+      "healthPort":  8080,
+      "healthUrl":   "/api/health",
+      "metricPort":  8080,
+      "accessLevel": "swiggy",
+      "cpu": 2,
+      "memory": 2048,
+      "scalingDefinition": [
+        {
+            "minReplicas": 1,
+            "maxReplicas": 1,
+            "metric": "cpu",
+            "target": 75
+         }
+      ] 
+    }
+  ]
+}
