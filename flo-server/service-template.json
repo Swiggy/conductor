@@ -1,12 +1,12 @@
 {
   "name": "flo-server",
   "pod": "flo-server",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "spec": [
     {
       "type": "container",
       "name": "", 
-      "image": "hashedin/conductor-server:0.0.2",
+      "image": "hashedin/conductor-server:0.0.3",
       "appPort": 8080,
       "appProtocol": "http",
       "healthPort":  8080,
