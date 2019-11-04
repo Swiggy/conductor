@@ -13,5 +13,5 @@ RUN unzip newrelic-java.zip
 RUN rm newrelic-java.zip
 COPY newrelic.yml newrelic/
 
-ENTRYPOINT [ "sh", "-c",  "java -javaagent:newrelic/newrelic.jar -jar conductor-server-*.*.*-SNAPSHOT-all.jar"]
+ENTRYPOINT [ "sh", "-c",  "java $JAVA_AGENT -jar conductor-server-*.*.*-SNAPSHOT-all.jar"]
 
