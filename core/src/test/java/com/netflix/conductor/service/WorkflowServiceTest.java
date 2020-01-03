@@ -462,6 +462,30 @@ public class WorkflowServiceTest {
     }
 
     @Test
+    public void testTerminateWorkflowByCorrelationId() {
+
+        Workflow workflow = new Workflow();
+        workflow.setCorrelationId("c123");
+
+        List<Workflow> workflowArrayList = new ArrayList<Workflow>() {{
+            add(workflow);
+        }};
+
+        when(mockExecutionService.getWorkflowInstancesByCorrelationId(anyString(), anyBoolean())).thenReturn(workflowArrayList);
+
+        workflowService.terminateWorkflowByCorrelationId("w123", "test");
+
+        verify(mockExecutionService, times(1)).getWorkflowInstancesByCorrelationId(anyString(), anyBoolean());
+        verify(mockWorkflowExecutor, times(1)).terminateWorkflow(anyString(), anyString());
+
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void testTerminateWorkflowByCorrelationIdNull() {
+         workflowService.terminateWorkflowByCorrelationId(null, null);
+    }
+
+    @Test
     public void testSearchWorkflows() {
         Workflow workflow = new Workflow();
         workflow.setCorrelationId("c123");
