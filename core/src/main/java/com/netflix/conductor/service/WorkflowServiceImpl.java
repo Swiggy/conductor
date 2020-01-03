@@ -308,6 +308,19 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     /**
+     * Terminates all workflows execution based on a correlationId.
+     * @param correlationId CorrelationId of the workflow.
+     * @param reason Reason for terminating the workflow.
+     */
+    @Service
+    public void terminateWorkflowByCorrelationId(String correlationId, String reason) {
+        List<Workflow> workflows = executionService.getWorkflowInstancesByCorrelationId(correlationId, false);
+        workflows.parallelStream().forEach( workflow ->
+                workflowExecutor.terminateWorkflow(workflow.getWorkflowId(), reason)
+        );
+    }
+
+    /**
      * Search for workflows based on payload and given parameters. Use sort options as sort ASCor DESC
      * e.g. sort=name or sort=workflowId:DESC. If order is not specified, defaults to ASC.
      * @param start Start index of pagination
