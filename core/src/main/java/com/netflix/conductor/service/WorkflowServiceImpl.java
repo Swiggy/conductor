@@ -50,7 +50,6 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowServiceImpl.class);
 
-
     private final WorkflowExecutor workflowExecutor;
 
     private final ExecutionService executionService;
