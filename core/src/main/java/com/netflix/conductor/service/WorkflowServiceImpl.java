@@ -48,6 +48,9 @@ import java.util.Optional;
 public class WorkflowServiceImpl implements WorkflowService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowServiceImpl.class);
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowServiceImpl.class);
+
+
     private final WorkflowExecutor workflowExecutor;
 
     private final ExecutionService executionService;
@@ -376,9 +379,11 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Service
     public void terminateWorkflowByCorrelationId(String correlationId, String reason) {
         List<Workflow> workflows = executionService.getWorkflowInstancesByCorrelationId(correlationId, false);
-        workflows.parallelStream().forEach( workflow ->
-                workflowExecutor.terminateWorkflow(workflow.getWorkflowId(), reason)
-        );
+        workflows.parallelStream().forEach( workflow -> {
+                LOGGER.debug(String.format("Terminating workflow %s by correlation ID %s and reason %s",
+                        workflow.getWorkflowId(), correlationId, reason));
+                workflowExecutor.terminateWorkflow(workflow.getWorkflowId(), reason);
+        });
     }
 
     /**
