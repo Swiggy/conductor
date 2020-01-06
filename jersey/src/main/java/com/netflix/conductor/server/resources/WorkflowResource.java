@@ -209,6 +209,16 @@ public class WorkflowResource {
         workflowService.terminateWorkflow(workflowId, reason);
     }
 
+    @DELETE
+    @Path("/{correlationId}")
+    @ApiOperation("Terminate workflow execution")
+    @Consumes(MediaType.WILDCARD)
+    public void terminateByCorrelationId(@PathParam("correlationId") String correlationId,
+                          @QueryParam("reason") String reason) {
+
+        workflowService.terminateWorkflowByCorrelationId(correlationId, reason);
+    }
+
     @ApiOperation(value = "Search for workflows based on payload and other parameters",
             notes = "use sort options as sort=<field>:ASC|DESC e.g. sort=name&sort=workflowId:DESC." +
                     " If order is not specified, defaults to ASC.")

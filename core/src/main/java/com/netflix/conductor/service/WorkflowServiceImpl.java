@@ -31,6 +31,8 @@ import com.netflix.conductor.core.config.Configuration;
 import com.netflix.conductor.core.execution.ApplicationException;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.service.utils.ServiceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -43,6 +45,8 @@ import java.util.Optional;
 @Singleton
 @Trace
 public class WorkflowServiceImpl implements WorkflowService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowServiceImpl.class);
 
     private final WorkflowExecutor workflowExecutor;
 
@@ -305,6 +309,21 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Service
     public void terminateWorkflow(String workflowId, String reason) {
         workflowExecutor.terminateWorkflow(workflowId, reason);
+    }
+
+    /**
+     * Terminates all workflows execution based on a correlationId.
+     * @param correlationId CorrelationId of the workflow.
+     * @param reason Reason for terminating the workflow.
+     */
+    @Service
+    public void terminateWorkflowByCorrelationId(String correlationId, String reason) {
+        List<Workflow> workflows = executionService.getWorkflowInstancesByCorrelationId(correlationId, false);
+        workflows.parallelStream().forEach( workflow -> {
+                LOGGER.debug(String.format("Terminating workflow %s by correlation ID %s and reason %s",
+                        workflow.getWorkflowId(), correlationId, reason));
+                workflowExecutor.terminateWorkflow(workflow.getWorkflowId(), reason);
+        });
     }
 
     /**
