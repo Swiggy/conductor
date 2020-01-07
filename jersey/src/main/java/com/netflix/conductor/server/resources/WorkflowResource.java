@@ -213,8 +213,8 @@ public class WorkflowResource {
     }
 
     @DELETE
-    @Path("/{correlationId}")
-    @ApiOperation("Terminate workflow execution")
+    @Path("correlationId/{correlationId}")
+    @ApiOperation("Terminate workflow execution by correlation id")
     @Consumes(MediaType.WILDCARD)
     public void terminateByCorrelationId(@PathParam("correlationId") String correlationId,
                           @QueryParam("reason") String reason) {
