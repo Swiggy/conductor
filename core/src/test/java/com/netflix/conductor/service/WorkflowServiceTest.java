@@ -468,6 +468,7 @@ public class WorkflowServiceTest {
     public void testTerminateWorkflowByCorrelationId() {
 
         Workflow workflow = new Workflow();
+        workflow.setWorkflowId("w123");
         workflow.setCorrelationId("c123");
 
         List<Workflow> workflowArrayList = new ArrayList<Workflow>() {{
@@ -476,7 +477,7 @@ public class WorkflowServiceTest {
 
         when(mockExecutionService.getWorkflowInstancesByCorrelationId(anyString(), anyBoolean())).thenReturn(workflowArrayList);
 
-        workflowService.terminateWorkflowByCorrelationId("w123", "test");
+        workflowService.terminateWorkflowByCorrelationId("c123", "test");
 
         verify(mockExecutionService, times(1)).getWorkflowInstancesByCorrelationId(anyString(), anyBoolean());
         verify(mockWorkflowExecutor, times(1)).terminateWorkflow(anyString(), anyString());
