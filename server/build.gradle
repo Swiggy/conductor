@@ -30,6 +30,7 @@ dependencies {
     compile project(':conductor-cassandra-persistence')
     compile project(':conductor-contribs')
     compile project(':conductor-es5-persistence')
+    compile project(':conductor-kafka-persistence')
     compile project(':conductor-grpc-server')
     compile project(':conductor-zookeeper-lock')
     compile project(':conductor-redis-lock')
@@ -60,6 +61,7 @@ shadowJar {
         attributes 'Description': 'Self contained Conductor server jar'
         attributes 'Main-Class': 'com.netflix.conductor.bootstrap.Main'
     }
+    zip64 = true
 }
 publishing {
     publications {
