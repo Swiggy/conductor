@@ -28,6 +28,7 @@ import com.netflix.conductor.core.events.EventProcessor;
 import com.netflix.conductor.core.events.EventQueueProvider;
 import com.netflix.conductor.core.events.SimpleActionProcessor;
 import com.netflix.conductor.core.events.SimpleEventProcessor;
+import com.netflix.conductor.core.events.queue.EventPollSchedulerProvider;
 import com.netflix.conductor.core.events.queue.dyno.DynoEventQueueProvider;
 import com.netflix.conductor.core.execution.ParametersUtils;
 import com.netflix.conductor.core.execution.mapper.ConfluentKafkaPublishTaskMapper;
@@ -58,6 +59,7 @@ import com.netflix.conductor.core.execution.tasks.Wait;
 import com.netflix.conductor.core.utils.JsonUtils;
 import com.netflix.conductor.dao.MetadataDAO;
 import com.netflix.conductor.dao.QueueDAO;
+import rx.Scheduler;
 
 import static com.netflix.conductor.common.metadata.workflow.TaskType.TASK_TYPE_CONFLUENT_KAFKA_PUBLISH;
 import static com.netflix.conductor.common.metadata.workflow.TaskType.TASK_TYPE_DECISION;
@@ -98,6 +100,7 @@ public class CoreModule extends AbstractModule {
         // start processing events when instance starts
         bind(ActionProcessor.class).to(SimpleActionProcessor.class);
         bind(EventProcessor.class).to(SimpleEventProcessor.class).asEagerSingleton();
+        bind(Scheduler.class).toProvider(EventPollSchedulerProvider.class).asEagerSingleton();
     }
 
     @Provides
@@ -116,8 +119,8 @@ public class CoreModule extends AbstractModule {
     @StringMapKey(CONDUCTOR_QUALIFIER)
     @Singleton
     @Named(EVENT_QUEUE_PROVIDERS_QUALIFIER)
-    public EventQueueProvider getDynoEventQueueProvider(QueueDAO queueDAO, Configuration configuration) {
-        return new DynoEventQueueProvider(queueDAO, configuration);
+    public EventQueueProvider getDynoEventQueueProvider(QueueDAO queueDAO, Configuration configuration, Scheduler eventScheduler) {
+        return new DynoEventQueueProvider(queueDAO, configuration, eventScheduler);
     }
 
     @ProvidesIntoMap

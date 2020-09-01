@@ -25,14 +25,10 @@ dependencies {
     compile project(':conductor-core')
     compile project(':conductor-jersey')
     compile project(':conductor-redis-persistence')
-    compile project(':conductor-mysql-persistence')
-    compile project(':conductor-postgres-persistence')
-    compile project(':conductor-cassandra-persistence')
     compile project(':conductor-contribs')
     compile project(':conductor-es5-persistence')
     compile project(':conductor-kafka-persistence')
     compile project(':conductor-grpc-server')
-    compile project(':conductor-zookeeper-lock')
     compile project(':conductor-redis-lock')
 
     compile "com.netflix.runtime:health-guice:${revHealth}"
@@ -55,6 +51,7 @@ dependencies {
 }
 
 shadowJar {
+    zip64 true
     mergeServiceFiles()
     configurations = [project.configurations.compile]
     manifest {

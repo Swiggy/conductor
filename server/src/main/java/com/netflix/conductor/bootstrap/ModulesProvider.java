@@ -15,9 +15,9 @@ package com.netflix.conductor.bootstrap;
 import com.google.inject.AbstractModule;
 import com.google.inject.ProvisionException;
 import com.google.inject.util.Modules;
-import com.netflix.conductor.cassandra.CassandraModule;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage;
 import com.netflix.conductor.common.utils.JsonMapperProvider;
+import com.netflix.conductor.kafka.index.moduleProvider.KafkaModule;
 import com.netflix.conductor.contribs.confluent_kafka.ConfluentKafkaProducerManager;
 import com.netflix.conductor.contribs.confluent_kafka.ConfluentKafkaPublishTask;
 import com.netflix.conductor.contribs.http.HttpTask;
@@ -27,16 +27,16 @@ import com.netflix.conductor.contribs.kafka.KafkaProducerManager;
 import com.netflix.conductor.contribs.kafka.KafkaPublishTask;
 import com.netflix.conductor.core.config.Configuration;
 import com.netflix.conductor.core.config.JacksonModule;
+import com.netflix.conductor.core.utils.LocalOnlyLockModule;
 import com.netflix.conductor.core.utils.NoopLockModule;
 import com.netflix.conductor.core.execution.WorkflowExecutorModule;
 import com.netflix.conductor.core.utils.DummyPayloadStorage;
 import com.netflix.conductor.core.utils.S3PayloadStorage;
+import com.netflix.conductor.noopindex.NoopIndexModule;
 import com.netflix.conductor.dao.RedisWorkflowModule;
 import com.netflix.conductor.elasticsearch.ElasticSearchModule;
 import com.netflix.conductor.locking.redis.config.RedisLockModule;
 import com.netflix.conductor.jetty.server.spectator.PrometheusMetricsModule;
-import com.netflix.conductor.kafka.index.moduleProvider.KafkaModule;
-import com.netflix.conductor.mysql.MySQLWorkflowModule;
 import com.netflix.conductor.server.DynomiteClusterModule;
 import com.netflix.conductor.server.JerseyModule;
 import com.netflix.conductor.server.LocalRedisModule;
@@ -44,8 +44,6 @@ import com.netflix.conductor.server.RedisClusterModule;
 import com.netflix.conductor.server.RedisSentinelModule;
 import com.netflix.conductor.server.ServerModule;
 import com.netflix.conductor.server.SwaggerModule;
-import com.netflix.conductor.zookeeper.config.ZookeeperModule;
-import com.netflix.conductor.postgres.PostgresWorkflowModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +62,8 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
     private final Configuration configuration;
 
     enum ExternalPayloadStorageType {
-        S3
+        S3,
+        DUMMY
     }
 
     @Inject
@@ -101,14 +100,6 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
                 modules.add(new RedisWorkflowModule());
                 logger.info("Starting conductor server using dynomite/redis cluster.");
                 break;
-            case MYSQL:
-                modules.add(new MySQLWorkflowModule());
-                logger.info("Starting conductor server using MySQL data store.");
-                break;
-            case POSTGRES:
-                modules.add(new PostgresWorkflowModule());
-                logger.info("Starting conductor server using Postgres data store.");
-                break;
             case MEMORY:
                 modules.add(new LocalRedisModule());
                 modules.add(new RedisWorkflowModule());
@@ -119,9 +110,6 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
                 modules.add(new RedisWorkflowModule());
                 logger.info("Starting conductor server using redis_cluster.");
                 break;
-            case CASSANDRA:
-                modules.add(new CassandraModule());
-                logger.info("Starting conductor server using cassandra.");
             case REDIS_SENTINEL:
                 modules.add(new RedisSentinelModule());
                 modules.add(new RedisWorkflowModule());
@@ -129,7 +117,10 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
                 break;
         }
 
-        modules.add(new ElasticSearchModule());
+        if (configuration.isIndexingPersistenceEnabled())
+            modules.add(new ElasticSearchModule());
+        else
+            modules.add(new NoopIndexModule());
 
         modules.add(new KafkaModule());
 
@@ -156,9 +147,9 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
                     modules.add(new RedisLockModule());
                     logger.info("Starting locking module using Redis cluster.");
                     break;
-                case ZOOKEEPER:
-                    modules.add(new ZookeeperModule());
-                    logger.info("Starting locking module using Zookeeper cluster.");
+                case LOCAL_ONLY:
+                    modules.add(new LocalOnlyLockModule());
+                    logger.info("Starting locking module using local only JVM locking.");
                     break;
                 default:
                     break;
@@ -169,7 +160,7 @@ public class ModulesProvider implements Provider<List<AbstractModule>> {
         }
 
         ExternalPayloadStorageType externalPayloadStorageType = null;
-        String externalPayloadStorageString = configuration.getProperty("workflow.external.payload.storage", "");
+        String externalPayloadStorageString = configuration.getProperty("workflow.external.payload.storage", "DUMMY");
         try {
             externalPayloadStorageType = ExternalPayloadStorageType.valueOf(externalPayloadStorageString);
         } catch (IllegalArgumentException e) {
