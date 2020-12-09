@@ -11,7 +11,7 @@ import java.util.Map;
 public interface ReminderApi {
 
     @Headers({
-            "Accept: text/plain",
+            "Accept: application/json",
             "Content-Type: application/json"
     })
     @POST("/v2/reminder/bulk")
