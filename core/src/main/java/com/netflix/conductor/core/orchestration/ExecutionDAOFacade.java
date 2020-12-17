@@ -303,6 +303,7 @@ public class ExecutionDAOFacade {
         }
     }
 
+
     private void removeWorkflowIndex(Workflow workflow , boolean archiveWorkflow) throws JsonProcessingException {
         if (archiveWorkflow) {
             if (workflow.getStatus().isTerminal()) {

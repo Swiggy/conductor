@@ -128,6 +128,7 @@ public class WorkflowClient extends ClientBase {
                 }
             }
         } catch (IOException e) {
+
             String errorMsg = String.format("Unable to start workflow:%s, version:%s", startWorkflowRequest.getName(), version);
             logger.error(errorMsg, e);
             MetricsContainer.incrementWorkflowStartErrorCount(startWorkflowRequest.getName(), e);
