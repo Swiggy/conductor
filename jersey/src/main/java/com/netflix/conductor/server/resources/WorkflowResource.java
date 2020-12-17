@@ -28,6 +28,8 @@ import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.service.WorkflowService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,6 +46,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
+import static com.netflix.conductor.core.execution.tasks.ApiInstrumentationUtil.*;
 
 
 /**
@@ -55,6 +58,8 @@ import java.util.Map;
 @Consumes({MediaType.APPLICATION_JSON})
 @Singleton
 public class WorkflowResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowResource.class);
 
     private final WorkflowService workflowService;
 
@@ -119,7 +124,13 @@ public class WorkflowResource {
     @Consumes(MediaType.WILDCARD)
     public void delete(@PathParam("workflowId") String workflowId,
                        @QueryParam("archiveWorkflow") @DefaultValue("true") boolean archiveWorkflow) {
+        LOGGER.info("remove worfklow called with id: {} and archiveWorkflow: {}", workflowId, archiveWorkflow);
+
+        Histogram.Timer timer = requestLatency.labels("remove_workflow").startTimer();
+        requestTotal.labels("remove_workflow", "invocation", "", "").inc();
         workflowService.deleteWorkflow(workflowId, archiveWorkflow);
+        requestTotal.labels("remove_workflow", "SUCCESS", "", "").inc();
+        timer.observeDuration()
     }
 
     @GET

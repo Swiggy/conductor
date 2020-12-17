@@ -46,6 +46,8 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.conductor.core.instrumentation.InstrumentQuery;
+
 /**
  * Service that acts as a facade for accessing execution data from the {@link ExecutionDAO}, {@link RateLimitingDAO} and {@link IndexDAO} storage layers
  */
@@ -115,6 +117,8 @@ public class ExecutionDAOFacade {
      *                              <li>parsing the {@link Workflow} object fails</li>
      *                              </ul>
      */
+
+    @InstrumentQuery(name = "getWorkflowById")
     public Workflow getWorkflowById(String workflowId, boolean includeTasks) {
         Workflow workflow = executionDAO.getWorkflow(workflowId, includeTasks);
         if (workflow == null) {
@@ -284,6 +288,8 @@ public class ExecutionDAOFacade {
      * @param workflowId      the id of the workflow to be removed
      * @param archiveWorkflow if true, the workflow will be archived in the {@link IndexDAO} after removal from  {@link ExecutionDAO}
      */
+
+    @InstrumentQuery(name = "removeWorkflow")
     public void removeWorkflow(String workflowId, boolean archiveWorkflow) {
         try {
             Workflow workflow = getWorkflowById(workflowId, true);
@@ -292,31 +298,39 @@ public class ExecutionDAOFacade {
             // remove workflow from DAO
             try {
                 executionDAO.removeWorkflow(workflowId);
+                LOGGER.info("Workflow removed: {}", workflowId);
             } catch (Exception ex) {
                 Monitors.recordDaoError("executionDao", "removeWorkflow");
                 throw ex;
             }
         } catch (ApplicationException ae) {
+            logger.error("workflow not removed: {}", workflowId, e);
             throw ae;
         } catch (Exception e) {
+
+            logger.error("workflow not removed with exception: {}", workflowId, e);
             throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, "Error removing workflow: " + workflowId, e);
         }
     }
 
+
+    @InstrumentQuery(name = "removeWorkflowIndex")
     private void removeWorkflowIndex(Workflow workflow , boolean archiveWorkflow) throws JsonProcessingException {
         if (archiveWorkflow) {
             if (workflow.getStatus().isTerminal()) {
                 // Only allow archival if workflow is in terminal state
                 // DO NOT archive async, since if archival errors out, workflow data will be lost
+                LOGGER.info("Workflow remove sync post workflow in terminal status: {}", workflow.getWorkflowId());
                 indexDAO.updateWorkflow(workflow.getWorkflowId(),
                         new String[]{RAW_JSON_FIELD, ARCHIVED_FIELD},
                         new Object[]{objectMapper.writeValueAsString(workflow), true});
             } else {
                 // Not archiving, also remove workflow from index
+                LOGGER.info("Workflow remove async not workflow in terminal status: {}", workflow.getWorkflowId());
                 indexDAO.asyncRemoveWorkflow(workflow.getWorkflowId());
             }
         } else {
-
+            LOGGER.info("Workflow not archived as workflow not in terminal status: {}, {}", workflow.getWorkflowId(), workflow.getStatus());
             throw new ApplicationException(Code.INVALID_INPUT, String.format("Cannot archive workflow: %s with status: %s",
                     workflow.getWorkflowId(),
                     workflow.getStatus()));
