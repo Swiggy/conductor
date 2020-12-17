@@ -28,6 +28,8 @@ import com.netflix.conductor.common.run.WorkflowSummary;
 import com.netflix.conductor.service.WorkflowService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -55,6 +57,8 @@ import java.util.Map;
 @Consumes({MediaType.APPLICATION_JSON})
 @Singleton
 public class WorkflowResource {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowResource.class);
 
     private final WorkflowService workflowService;
 
@@ -119,6 +123,7 @@ public class WorkflowResource {
     @Consumes(MediaType.WILDCARD)
     public void delete(@PathParam("workflowId") String workflowId,
                        @QueryParam("archiveWorkflow") @DefaultValue("true") boolean archiveWorkflow) {
+        LOGGER.info("remove worfklow called with id: {} and archiveWorkflow: {}", workflowId, archiveWorkflow);
         workflowService.deleteWorkflow(workflowId, archiveWorkflow);
     }
 

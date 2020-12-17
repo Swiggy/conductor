@@ -1,4 +1,4 @@
-package com.swiggy.ff.reminder.service.util.aspects;
+package com.netflix.conductor.core.instrumentation;
 
 import io.prometheus.client.Histogram;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -6,7 +6,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
-import static com.swiggy.ff.reminder.service.util.aspects.InstrumentationUtil.*;
+import static com.netflix.conductor.core.instrumentation.InstrumentationUtil.*;
 
 @Component
 @Aspect
