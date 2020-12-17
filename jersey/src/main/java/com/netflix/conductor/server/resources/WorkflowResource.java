@@ -46,6 +46,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
+import static com.netflix.conductor.core.execution.tasks.ApiInstrumentationUtil.*;
 
 
 /**
@@ -124,7 +125,12 @@ public class WorkflowResource {
     public void delete(@PathParam("workflowId") String workflowId,
                        @QueryParam("archiveWorkflow") @DefaultValue("true") boolean archiveWorkflow) {
         LOGGER.info("remove worfklow called with id: {} and archiveWorkflow: {}", workflowId, archiveWorkflow);
+
+        Histogram.Timer timer = requestLatency.labels("remove_workflow").startTimer();
+        requestTotal.labels("remove_workflow", "invocation", "", "").inc();
         workflowService.deleteWorkflow(workflowId, archiveWorkflow);
+        requestTotal.labels("remove_workflow", "SUCCESS", "", "").inc();
+        timer.observeDuration()
     }
 
     @GET
