@@ -224,6 +224,13 @@ public interface WorkflowService {
     void terminateWorkflow(@NotEmpty(message = "WorkflowId cannot be null or empty.") String workflowId, String reason);
 
     /**
+     * Terminates all workflows execution based on a correlationId.
+     * @param correlationId CorrelationId of the workflow.
+     * @param reason Reason for terminating the workflow.
+     */
+    void terminateWorkflowByCorrelationId(@NotEmpty(message = "CorrelationId cannot be null or empty.") String correlationId, String reason);
+
+    /**
      * Search for workflows based on payload and given parameters. Use sort options as sort ASCor DESC
      * e.g. sort=name or sort=workflowId:DESC. If order is not specified, defaults to ASC.
      *

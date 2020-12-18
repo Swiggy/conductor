@@ -369,6 +369,17 @@ public class ExecutionService {
 		}).collect(Collectors.toList());
 	}
 
+	public List<Workflow> getWorkflowInstancesByCorrelationId(String correlationId, boolean includeTasks) {
+
+		List<Workflow> workflows = executionDAOFacade.getWorkflowsByCorrelationId(correlationId, includeTasks);
+
+		List<Workflow> runningWorkflows = workflows.stream()
+				 .filter( workflow -> workflow.getStatus().equals(Workflow.WorkflowStatus.RUNNING))
+				 .collect(Collectors.toList());
+
+		return runningWorkflows;
+	}
+
 	public Workflow getExecutionStatus(String workflowId, boolean includeTasks) {
 		return executionDAOFacade.getWorkflowById(workflowId, includeTasks);
 	}

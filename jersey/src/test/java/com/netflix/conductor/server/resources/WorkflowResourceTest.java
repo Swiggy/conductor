@@ -184,6 +184,12 @@ public class WorkflowResourceTest {
     }
 
     @Test
+    public void testTerminateByCorrelationId() {
+        workflowResource.terminateByCorrelationId("w123", "test");
+        verify(mockWorkflowService, times(1)).terminateWorkflowByCorrelationId(anyString(), anyString());
+    }
+
+    @Test
     public void testTerminate() {
         workflowResource.terminate("w123", "test");
         verify(mockWorkflowService, times(1)).terminateWorkflow(anyString(), anyString());
