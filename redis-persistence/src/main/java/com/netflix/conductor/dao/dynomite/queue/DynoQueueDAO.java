@@ -205,7 +205,11 @@ public class DynoQueueDAO implements QueueDAO {
 
     @Override
     public void remove(String queueName, String messageId) {
-        queues.get(queueName).remove(messageId);
+        try {
+            System.out.println(queueName + " " + messageId + " " + queues.get(queueName).remove(messageId));
+        } catch (Exception e) {
+            logger.error("Got exception while removing key " + messageId + " from queue " + queueName, e);
+        }
     }
 
     @Override
